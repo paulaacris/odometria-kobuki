@@ -1,0 +1,29 @@
+<launch>
+  <!-- Apartat 1 [P]. Kobuki a Gazebo + emulador + odometria propia. -->
+  <arg name="calibracio" default="nominal"/>   <!-- nominal | fabrica | calibrat -->
+  <arg name="metode"     default="punt_mig"/>  <!-- euler | punt_mig | exacta -->
+  <arg name="rviz"       default="false"/>
+  <arg name="soroll"     default="0.0"/>       <!-- nomes l'apartat 5 -->
+  <!-- Per a la prova de desbordament de §3.2 feina 7 sense tocar el launch. -->
+  <arg name="comptador_inicial" default="0"/>
+  <arg name="llavor"     default="-1"/>
+  <!-- Mon buit: kobuki_playground te taules i blocs (el mes proper a 0,5 m). -->
+  <arg name="mon"        default="kobuki_empty_world"/>
+
+  <include file="$(find kobuki_gazebo)/launch/$(arg mon).launch"/>
+
+  <node pkg="pl1_cognom" type="encoder_emulat.py" name="encoder_emulat" output="screen">
+    <param name="soroll_relatiu" value="$(arg soroll)"/>
+    <param name="llavor"         value="$(arg llavor)"/>
+    <param name="comptador_inicial" value="$(arg comptador_inicial)"/>
+  </node>
+
+  <node pkg="pl1_cognom" type="odometria_propia.py" name="odometria_propia" output="screen">
+    <rosparam command="load"
+              file="$(find pl1_cognom)/config/kobuki_$(arg calibracio).yaml"/>
+    <param name="metode" value="$(arg metode)"/>
+  </node>
+
+  <!-- A rviz: Fixed Frame odom_propi i un display Odometry sobre /odom_propi. -->
+  <node if="$(arg rviz)" pkg="rviz" type="rviz" name="rviz"/>
+</launch>

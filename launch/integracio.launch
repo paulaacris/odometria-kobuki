@@ -1,0 +1,105 @@
+<launch>
+  <!-- ===================================================================
+       Apartat 3 [P]. Quatre odometries en paral.lel sobre el mateix robot:
+
+         /ref            emulador a la freqüencia nativa + metode exacta.
+                         Es la que guia l'executor i el patro contra el qual
+                         es mesuren les altres tres.
+         /lenta          emulador a $(arg freq) Hz i, sota seu, tres
+                         odometries: /lenta/euler, /lenta/punt_mig i
+                         /lenta/exacta.
+
+       Les tres de /lenta reben exactament els mateixos comptes, aixi que
+       l'unica cosa que les separa es el metode d'integracio.
+
+       El recorregut es un ARC, no un quadrat: en un tram recte Delta theta = 0
+       i en un gir en el lloc Delta s = 0, i en tots dos casos els tres metodes
+       donen exactament el mateix resultat. Nomes es diferencien sobre una corba.
+       =================================================================== -->
+
+  <arg name="freq"       default="5"/>      <!-- Hz de la branca lenta -->
+  <!-- Per sobre de la freqüencia de /joint_states (mesurada: 100 Hz), de
+       manera que l'emulador de /ref no submostregi gens. -->
+  <arg name="freq_ref"   default="1000"/>
+  <!-- Nominal a proposit: l'apartat 3 mesura error d'integracio, no sistematic. -->
+  <arg name="calibracio" default="nominal"/>
+  <arg name="mon"        default="kobuki_empty_world"/>
+
+  <include file="$(find kobuki_gazebo)/launch/$(arg mon).launch"/>
+
+  <!-- ================= referencia ================= -->
+  <group ns="ref">
+    <node pkg="pl1_cognom" type="encoder_emulat.py" name="encoder_emulat">
+      <param name="freq_publicacio" value="$(arg freq_ref)"/>
+    </node>
+    <node pkg="pl1_cognom" type="odometria_propia.py" name="odometria_propia"
+          output="screen">
+      <rosparam command="load"
+                file="$(find pl1_cognom)/config/kobuki_$(arg calibracio).yaml"/>
+      <param name="metode" value="exacta"/>
+      <param name="publicar_tf" value="true"/>
+    </node>
+  </group>
+
+  <!-- ================= branca lenta ================= -->
+  <group ns="lenta">
+    <node pkg="pl1_cognom" type="encoder_emulat.py" name="encoder_emulat">
+      <param name="freq_publicacio" value="$(arg freq)"/>
+    </node>
+
+    <group ns="euler">
+      <node pkg="pl1_cognom" type="odometria_propia.py" name="odometria_propia">
+        <rosparam command="load"
+                  file="$(find pl1_cognom)/config/kobuki_$(arg calibracio).yaml"/>
+        <param name="metode" value="euler"/>
+        <param name="publicar_tf" value="false"/>
+        <remap from="encoders" to="/lenta/encoders"/>
+      </node>
+    </group>
+    <group ns="punt_mig">
+      <node pkg="pl1_cognom" type="odometria_propia.py" name="odometria_propia">
+        <rosparam command="load"
+                  file="$(find pl1_cognom)/config/kobuki_$(arg calibracio).yaml"/>
+        <param name="metode" value="punt_mig"/>
+        <param name="publicar_tf" value="false"/>
+        <remap from="encoders" to="/lenta/encoders"/>
+      </node>
+    </group>
+    <group ns="exacta">
+      <node pkg="pl1_cognom" type="odometria_propia.py" name="odometria_propia">
+        <rosparam command="load"
+                  file="$(find pl1_cognom)/config/kobuki_$(arg calibracio).yaml"/>
+        <param name="metode" value="exacta"/>
+        <param name="publicar_tf" value="false"/>
+        <remap from="encoders" to="/lenta/encoders"/>
+      </node>
+    </group>
+  </group>
+
+  <!-- ================= executor i registre ================= -->
+  <node pkg="pl1_cognom" type="executor_recorregut.py" name="executor_recorregut"
+        output="screen">
+    <rosparam command="load" file="$(find pl1_cognom)/config/executor.yaml"/>
+    <param name="tipus"       value="arc"/>
+    <param name="sentit"      value="ccw"/>
+    <param name="repeticions" value="1"/>
+    <remap from="odom_propi" to="/ref/odom_propi"/>
+    <rosparam param="serveis_reset">
+      ["/ref/odometria_propia/reset",
+       "/lenta/euler/odometria_propia/reset",
+       "/lenta/punt_mig/odometria_propia/reset",
+       "/lenta/exacta/odometria_propia/reset"]
+    </rosparam>
+  </node>
+
+  <node pkg="pl1_cognom" type="registre_csv.py" name="registre_csv" output="screen">
+    <rosparam param="topics_odom">
+      ["/ref/odom_propi",
+       "/lenta/euler/odom_propi",
+       "/lenta/punt_mig/odom_propi",
+       "/lenta/exacta/odom_propi"]
+    </rosparam>
+    <param name="directori"
+           value="$(find pl1_cognom)/resultats/integracio_$(arg freq)"/>
+  </node>
+</launch>

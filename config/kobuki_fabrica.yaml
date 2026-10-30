@@ -1,0 +1,14 @@
+# ===================================================================
+# Parametres "de fabrica" del teu grup.                  [P]
+# ===================================================================
+# El robot de Gazebo es perfecte (r = 0.035 m, b = 0.230 m). Qui s'equivoca
+# es la teva odometria, que es creu aquests valors: l'executor l'obeeix i el
+# quadrat no tanca.
+#
+# No els comparteixis ni els copiis d'un altre grup: els Ed i Eb que ha de
+# trobar el teu UMBmark en depenen. I no els facis servir per corregir
+# l'odometria a ma: l'objectiu de l'apartat 4 es deduir-los de les mesures.
+radi_dreta: 0.0349563
+radi_esquerra: 0.0350437
+distancia_rodes: 0.2284693
+comptes_per_volta: 2578.33
