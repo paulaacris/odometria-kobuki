@@ -3,22 +3,22 @@
   <arg name="calibracio" default="nominal"/>
   <arg name="metode"     default="punt_mig"/>
 
-  <include file="$(find pl1_oliver)/launch/odometria.launch">
+  <include file="$(find pl1_cognom)/launch/odometria.launch">
     <arg name="calibracio" value="$(arg calibracio)"/>
     <arg name="metode"     value="$(arg metode)"/>
   </include>
 
-  <node pkg="pl1_oliver" type="executor_recorregut.py" name="executor_recorregut"
+  <node pkg="pl1_cognom" type="executor_recorregut.py" name="executor_recorregut"
         output="screen">
-    <rosparam command="load" file="$(find pl1_oliver)/config/executor.yaml"/>
+    <rosparam command="load" file="$(find pl1_cognom)/config/executor.yaml"/>
     <param name="tipus"       value="quadrat"/>
     <param name="sentit"      value="ccw"/>
     <param name="repeticions" value="2"/>
     <remap from="odom_propi" to="/odom_propi"/>
   </node>
 
-  <node pkg="pl1_oliver" type="registre_csv.py" name="registre_csv" output="screen">
+  <node pkg="pl1_cognom" type="registre_csv.py" name="registre_csv" output="screen">
     <rosparam param="topics_odom">["/odom_propi", "/odom"]</rosparam>
-    <param name="directori" value="$(find pl1_oliver)/resultats/prova"/>
+    <param name="directori" value="$(find pl1_cognom)/resultats/prova"/>
   </node>
 </launch>
