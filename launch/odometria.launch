@@ -12,15 +12,15 @@
 
   <include file="$(find kobuki_gazebo)/launch/$(arg mon).launch"/>
 
-  <node pkg="pl1_cognom" type="encoder_emulat.py" name="encoder_emulat" output="screen">
+  <node pkg="pl1_oliver" type="encoder_emulat.py" name="encoder_emulat" output="screen">
     <param name="soroll_relatiu" value="$(arg soroll)"/>
     <param name="llavor"         value="$(arg llavor)"/>
     <param name="comptador_inicial" value="$(arg comptador_inicial)"/>
   </node>
 
-  <node pkg="pl1_cognom" type="odometria_propia.py" name="odometria_propia" output="screen">
+  <node pkg="pl1_oliver" type="odometria_propia.py" name="odometria_propia" output="screen">
     <rosparam command="load"
-              file="$(find pl1_cognom)/config/kobuki_$(arg calibracio).yaml"/>
+              file="$(find pl1_oliver)/config/kobuki_$(arg calibracio).yaml"/>
     <param name="metode" value="$(arg metode)"/>
   </node>
 

@@ -29,13 +29,13 @@
 
   <!-- ================= referencia ================= -->
   <group ns="ref">
-    <node pkg="pl1_cognom" type="encoder_emulat.py" name="encoder_emulat">
+    <node pkg="pl1_oliver" type="encoder_emulat.py" name="encoder_emulat">
       <param name="freq_publicacio" value="$(arg freq_ref)"/>
     </node>
-    <node pkg="pl1_cognom" type="odometria_propia.py" name="odometria_propia"
+    <node pkg="pl1_oliver" type="odometria_propia.py" name="odometria_propia"
           output="screen">
       <rosparam command="load"
-                file="$(find pl1_cognom)/config/kobuki_$(arg calibracio).yaml"/>
+                file="$(find pl1_oliver)/config/kobuki_$(arg calibracio).yaml"/>
       <param name="metode" value="exacta"/>
       <param name="publicar_tf" value="true"/>
     </node>
@@ -43,32 +43,32 @@
 
   <!-- ================= branca lenta ================= -->
   <group ns="lenta">
-    <node pkg="pl1_cognom" type="encoder_emulat.py" name="encoder_emulat">
+    <node pkg="pl1_oliver" type="encoder_emulat.py" name="encoder_emulat">
       <param name="freq_publicacio" value="$(arg freq)"/>
     </node>
 
     <group ns="euler">
-      <node pkg="pl1_cognom" type="odometria_propia.py" name="odometria_propia">
+      <node pkg="pl1_oliver" type="odometria_propia.py" name="odometria_propia">
         <rosparam command="load"
-                  file="$(find pl1_cognom)/config/kobuki_$(arg calibracio).yaml"/>
+                  file="$(find pl1_oliver)/config/kobuki_$(arg calibracio).yaml"/>
         <param name="metode" value="euler"/>
         <param name="publicar_tf" value="false"/>
         <remap from="encoders" to="/lenta/encoders"/>
       </node>
     </group>
     <group ns="punt_mig">
-      <node pkg="pl1_cognom" type="odometria_propia.py" name="odometria_propia">
+      <node pkg="pl1_oliver" type="odometria_propia.py" name="odometria_propia">
         <rosparam command="load"
-                  file="$(find pl1_cognom)/config/kobuki_$(arg calibracio).yaml"/>
+                  file="$(find pl1_oliver)/config/kobuki_$(arg calibracio).yaml"/>
         <param name="metode" value="punt_mig"/>
         <param name="publicar_tf" value="false"/>
         <remap from="encoders" to="/lenta/encoders"/>
       </node>
     </group>
     <group ns="exacta">
-      <node pkg="pl1_cognom" type="odometria_propia.py" name="odometria_propia">
+      <node pkg="pl1_oliver" type="odometria_propia.py" name="odometria_propia">
         <rosparam command="load"
-                  file="$(find pl1_cognom)/config/kobuki_$(arg calibracio).yaml"/>
+                  file="$(find pl1_oliver)/config/kobuki_$(arg calibracio).yaml"/>
         <param name="metode" value="exacta"/>
         <param name="publicar_tf" value="false"/>
         <remap from="encoders" to="/lenta/encoders"/>
@@ -77,9 +77,9 @@
   </group>
 
   <!-- ================= executor i registre ================= -->
-  <node pkg="pl1_cognom" type="executor_recorregut.py" name="executor_recorregut"
+  <node pkg="pl1_oliver" type="executor_recorregut.py" name="executor_recorregut"
         output="screen">
-    <rosparam command="load" file="$(find pl1_cognom)/config/executor.yaml"/>
+    <rosparam command="load" file="$(find pl1_oliver)/config/executor.yaml"/>
     <param name="tipus"       value="arc"/>
     <param name="sentit"      value="ccw"/>
     <param name="repeticions" value="1"/>
@@ -92,7 +92,7 @@
     </rosparam>
   </node>
 
-  <node pkg="pl1_cognom" type="registre_csv.py" name="registre_csv" output="screen">
+  <node pkg="pl1_oliver" type="registre_csv.py" name="registre_csv" output="screen">
     <rosparam param="topics_odom">
       ["/ref/odom_propi",
        "/lenta/euler/odom_propi",
@@ -100,6 +100,6 @@
        "/lenta/exacta/odom_propi"]
     </rosparam>
     <param name="directori"
-           value="$(find pl1_cognom)/resultats/integracio_$(arg freq)"/>
+           value="$(find pl1_oliver)/resultats/integracio_$(arg freq)"/>
   </node>
 </launch>
