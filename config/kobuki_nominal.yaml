@@ -1,0 +1,6 @@
+# Parametres NOMINALS del Kobuki (els valors reals del model de Gazebo).
+# Es carreguen com a parametres privats de odometria_propia.py.
+radi_dreta: 0.035        # m
+radi_esquerra: 0.035     # m
+distancia_rodes: 0.230   # m  (b)
+comptes_per_volta: 2578.33   # N = 52 * 6545/132
