@@ -1,0 +1,15 @@
+# Parámetros del executor_recorregut (apartat 2).
+# tipus, sentit i repeticions NO van aquí: los pasan los launch como argumentos.
+costat: 3.0            # m, lado del cuadrado
+longitud_recta: 5.0    # m
+radi_arc: 0.5          # m
+angle_arc: 180.0       # grados
+v_max: 0.2             # m/s
+w_max: 0.5             # rad/s
+kp_angular: 1.5
+tol_dist: 0.01         # m
+tol_angle: 0.002       # rad
+pausa: 1.0             # s
+model: mobile_base
+pose_inicial: [0.0, 0.0, 0.0]   # [x, y, yaw]
+serveis_reset: [/odometria_propia/reset]
