@@ -94,26 +94,34 @@ def figura_dispersio(errors, cgs, emax, calibracio):
 # ======================================================================
 def centre_gravetat(ex, ey):
     """Centroide dels errors de retorn d'un sentit (diap. 29)."""
-    # TODO (diap. 29)
-    raise NotImplementedError("centre_gravetat")
+    return float(np.mean(ex)), float(np.mean(ey)) # media aritmética 
 
 
 def emax_syst(cg_cw, cg_ccw):
     """r_cw, r_ccw i Emax,syst = max(r_cw, r_ccw) (diap. 29)."""
-    # TODO (diap. 29)
-    raise NotImplementedError("emax_syst")
+    r_cw = float(np.hypot(cg_cw[0], cg_cw[1])) # pitégoras de cg_cw[x] y cg_cw[y]
+    r_ccw = float(np.hypot(cg_ccw[0], cg_ccw[1]))
+    return r_cw, r_ccw, max(r_cw, r_ccw)
 
 
 def alfa_beta(cg_cw, cg_ccw, L):
     """alfa i beta en GRAUS (diap. 30)."""
-    # TODO (diap. 30)
-    raise NotImplementedError("alfa_beta")
+    x_cw, x_ccw = cg_cw[0], cg_ccw[0]
+    alfa = (x_cw + x_ccw) / (-4.0 * L) * 180.0 / np.pi
+    beta = (x_cw - x_ccw) / (-4.0 * L) * 180.0 / np.pi
+    return float(alfa), float(beta)
 
 
 def factors(alfa, beta, L, b):
     """R, Ed i Eb (diap. 30). beta arriba en graus: a radians abans del sinus."""
-    # TODO (diap. 30)
-    raise NotImplementedError("factors")
+    s = np.sin(np.radians(beta) / 2.0)
+    if abs(s) < 1e-12:                 # para no dividir por 0 
+        R, ed = float("inf"), 1.0      # si beta es 0 el robot va recto, el radio de curva es inf y ed es 1
+    else:
+        R = (L / 2.0) / s
+        ed = (R + b / 2.0) / (R - b / 2.0)
+    eb = 90.0 / (90.0 - alfa)
+    return float(R), float(ed), float(eb)
 
 
 def parametres_corregits(ed, eb, params):
@@ -126,8 +134,16 @@ def parametres_corregits(ed, eb, params):
     s'aplica MULTIPLICANT la rao que ja es feia servir. Si s'assigna
     directament DR/DL = Ed, la correccio no esmena l'error: el canvia de signe.
     """
-    # TODO (diap. 30)
-    raise NotImplementedError("parametres_corregits")
+    rd, re = params["radi_dreta"], params["radi_esquerra"]
+    b_nou = eb * params["distancia_rodes"] # corrige la distancia entre las ruedas multiplicandola po eb
+    Da = rd + re                        # diámetro medio = (2rd + 2re)/2
+    ed_tot = (rd / re) * ed            
+    DR = 2.0 * ed_tot / (ed_tot + 1.0) * Da
+    DL = 2.0 / (ed_tot + 1.0) * Da
+    return {"radi_dreta": DR / 2.0,
+            "radi_esquerra": DL / 2.0,
+            "distancia_rodes": b_nou,
+            "comptes_per_volta": params["comptes_per_volta"]}
 
 
 # ======================================================================
