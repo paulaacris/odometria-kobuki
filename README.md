@@ -41,33 +41,7 @@ El robot de Gazebo es perfecto, radios de 0,035 m y distancia entre ruedas de 0,
 
 ---
 
-## 2. Estructura del paquete y cómo ejecutarlo
-
-```diff
-- La estructura a lo mejor se puede quitar
-```
-
-```
-pl1_cognom/
-├── scripts/
-│   ├── encoder_emulat.py        # ángulo de rueda -> cuentas de 16 bits
-│   ├── odometria_propia.py      # cuentas -> pose (x, y, θ)
-│   ├── executor_recorregut.py   # cuadrado / recta / arco
-│   └── registre_csv.py          # [profesorado] guarda los CSV
-├── config/
-│   ├── kobuki_nominal.yaml      # valores reales del modelo
-│   ├── kobuki_fabrica.yaml      # [profesorado] valores con error del grupo
-│   ├── kobuki_calibrat.yaml     # lo genera analisi/umbmark.py
-│   └── executor.yaml            # parámetros del executor
-├── launch/                      # [profesorado] odometria, prova, integracio, umbmark
-├── analisi/
-│   ├── integracio.py            # apartado 3
-│   ├── umbmark.py               # apartado 4 (esqueleto del profesorado, cinco funciones nuestras)
-│   └── orientacio.py            # apartado 4: odometría frente a IMU
-└── resultats/                   # CSV y figuras generados
-```
-
-Comandos que usamos, en el orden de la práctica:
+## 2. Cómo ejecutarlo
 
 ```bash
 # apartado 1 (con kbuki_sim y kobuki_keyop en marcha)
