@@ -25,10 +25,6 @@ La odometría estima la pose de un robot a partir de lo que giran sus ruedas. Es
 
 En esta práctica hemos montado sobre el Kobuki simulado en Gazebo todo el recorrido, desde el contador del encoder hasta una pose calibrada:
 
-```diff
-- Esta tabla no se si quitarla 
-```
-
 | Apartado | Qué hemos hecho |
 |---|---|
 | 0 | Arrancar el simulador, mover el robot y localizar los topics que se usan después. |
@@ -85,10 +81,6 @@ python3 analisi/orientacio.py
 
 ## 3. Apartado 0: primeros pasos
 
-```diff
-- Modificar este apartado
-```
-
 Este apartado es guiado, pero deja tres datos que se usan en toda la práctica:
 
 | Dato | Valor |
@@ -96,10 +88,6 @@ Este apartado es guiado, pero deja tres datos que se usan en toda la práctica:
 | Articulaciones de las ruedas en `/joint_states` | `wheel_left_joint`, `wheel_right_joint` |
 | Frecuencia de `/joint_states` | 100 Hz |
 | Modelo del Kobuki en `/gazebo/model_states` | `mobile_base` |
-
-Con `kobuki_keyop` comprobamos los tres movimientos básicos de un robot diferencial: línea recta (las dos ruedas giran igual), giro en el sitio (una rueda avanza y la otra retrocede) y curva (la rueda exterior gira más deprisa que la interior).
-
-En rviz, con Fixed Frame `odom`, vimos el modelo, los marcos `odom` y `base_footprint` y las flechas de `/odom`. Con `rqt_plot` comparamos la x de `/odom` con la x real de Gazebo: se separan muy poco, pero no son iguales. `/odom` es la odometría que calcula el simulador, no la pose real, y eso es importante porque más adelante la usamos solo como comparación y nunca para controlar.
 
 ---
 
