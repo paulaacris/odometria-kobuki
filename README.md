@@ -70,20 +70,40 @@ pl1_cognom/
 Comandos que usamos, en el orden de la práctica:
 
 ```bash
-roslaunch pl1_cognom odometria.launch rviz:=true           # apartado 1
-roslaunch pl1_cognom prova.launch                          # apartado 2 (dos cuadrados)
+# apartado 1 (con kbuki_sim y kobuki_keyop en marcha)
+# probar encoder_emulat.py
+rosrun pl1_cognom encoder_emulat.py
+rostopic echo /encoders
+#probar odometria_propia.py
+roslaunch pl1_cognom odometria.launch rviz:=true
 
-roslaunch pl1_cognom integracio.launch freq:=5             # apartado 3 (también 2 y 4)
+# apartado 2
+roslaunch pl1_cognom prova.launch                          
+
+# apartado 3
+# 5 Hz
+roslaunch pl1_cognom integracio.launch
 python3 analisi/integracio.py 5
+# 2 Hz
+roslaunch pl1_cognom integracio.launch freq:=2
+python3 analisi/integracio.py 2
+# 4 Hz
+roslaunch pl1_cognom integracio.launch freq:=4
+python3 analisi/integracio.py 4
 
+# apartado 4
+# error de fondo (calibración nominal)
 roslaunch pl1_cognom umbmark.launch calibracio:=nominal sentit:=cw
 roslaunch pl1_cognom umbmark.launch calibracio:=nominal sentit:=ccw
+# UMBmark sin calibrar (parámetros de fábrica)
 roslaunch pl1_cognom umbmark.launch calibracio:=fabrica sentit:=cw
 roslaunch pl1_cognom umbmark.launch calibracio:=fabrica sentit:=ccw
-python3 analisi/umbmark.py fabrica                         # genera kobuki_calibrat.yaml
+python3 analisi/umbmark.py fabrica
+# validar calibración
 roslaunch pl1_cognom umbmark.launch calibracio:=calibrat sentit:=cw
 roslaunch pl1_cognom umbmark.launch calibracio:=calibrat sentit:=ccw
 python3 analisi/umbmark.py calibrat
+# comparación de orientacion con la IMU
 python3 analisi/orientacio.py
 ```
 
