@@ -260,15 +260,15 @@ Al doblar la frecuencia de 2 Hz a 4 Hz, la teoría dice que el error de Euler se
 
 | Método | Error a 2 Hz (mm) | Error a 4 Hz (mm) | Cociente |
 |---|---|---|---|
-| Euler | [RELLENAR] | [RELLENAR] | [RELLENAR] (esperado ≈ 2) |
-| Punto medio | [RELLENAR] | [RELLENAR] | [RELLENAR] (esperado ≈ 4) |
-| Exacta | [RELLENAR] | [RELLENAR] | no aplica |
+| Euler | 100,24 | 50,38 | 1,99 (esperado ≈ 2) |
+| Punto medio | 1,63 | 0,37 | 4,37 (esperado ≈ 4) |
+| Exacta | 0,05 | 0,08 | no aplica |
 
 ### 6.4 Interpretación y método por defecto
 
-[RELLENAR: ordenar los tres métodos por error y comparar el orden con el de la diapositiva 21; comentar si los cocientes de la segunda tabla se parecen a 2 y 4 y, si no, por qué.]
+Ordenados de mayor a menor error: Euler, punto medio y exacta, que es el orden esperado. Los cocientes se parecen a lo que predice la teoría, Euler (1,99) se acerca a 2, porque su error es de primer orden y se divide por 2 al doblar la frecuencia. El punto medio (4,37) se acerca a 4, porque su error es de segundo orden. La pequeña desviación del 4,37 es normal con un solo recorrido por frecuencia y con errores tan pequeños, cercanos a la resolución del encoder (0,085 mm). La exacta no tiene cociente, su error es tan pequeño, del orden de la resolución del encoder, que no sigue ninguna tendencia.
 
-Nuestro nodo usa `punt_mig` por defecto. Es muy sencillo de programar, no tiene el problema de dividir por Δθ ≈ 0 que tiene la exacta, y a las frecuencias a las que trabaja el robot (50 a 100 Hz) la diferencia con la exacta es mínima. [RELLENAR: confirmar con la tabla del apartado 6.3.]
+Nuestro nodo usa `punt_mig` por defecto. Es muy sencillo de programar, no tiene el problema de dividir por Δθ ≈ 0 que tiene la exacta, y a las frecuencias a las que trabaja el robot (50 a 100 Hz) la diferencia con la exacta es mínima. A 4 Hz el punto medio ya tiene un error de 0,37 mm, y a 50–100 Hz sería mucho menor, por lo que la diferencia con la exacta es despreciable.
 
 ---
 
