@@ -93,6 +93,8 @@ Este apartado es guiado, pero deja tres datos que se usan en toda la práctica:
 
 ## 4. Apartado 1: encoders y odometría
 
+La odometría se calcula en dos nodos, un emulador que convierte el giro de las ruedas en cuentas de encoder y un integrador que reconstruye la pose a partir de esas cuentas.
+
 ### 4.1 Resolución del encoder
 
 El fabricante da 52 cuentas por vuelta del eje del motor y una reducción de 6545/132. Las cuentas por vuelta de rueda son:
@@ -109,11 +111,17 @@ Cada cuenta equivale a este avance de la rueda:
 Δs = 2π · r / N = 2π · 0,035 / 2578,33 ≈ 0,0853 mm/cuenta
 ```
 
+y en giro a:
+
+```
+0,085 mm / 0,230 m ≈ 3,7 · 10⁴ rad ≈ 0,02°
+```
+
 Este valor marca la resolución de la odometría,  cualquier desplazamiento de la rueda inferior a 0,085 mm no genera un cambio de cuenta y pasa desapercibido para el sistema.
 
 ### 4.2 Nodo `encoder_emulat.py`
 
-Gazebo publica el ángulo acumulado de cada rueda en radianes, continuo y sin saltos. Un robot real entrega cuentas enteras de 16 bits que vuelven a 0 después del 65 535. El emulador convierte un formato en el otro y publica un `kobuki_msgs/SensorState`, el mismo mensaje que daría el Kobuki real, de modo que el nodo de odometría no sabe si trabaja con simulación o con el robot.
+Gazebo publica el ángulo acumulado de cada rueda en radianes, continuo y sin saltos, mientras que un Kobuki real entrega cuentas enteras de 16 bits que vuelven a 0 después del 65 535. El emulador convierte un formato en el otro y publica un `kobuki_msgs/SensorState`, el mismo mensaje que daría el Kobuki real, de modo que el nodo de odometría no sabe si trabaja con simulación o con el robot.
 
 Para cada mensaje de `/joint_states`:
 
@@ -148,7 +156,7 @@ Decisiones de diseño:
 - Los parámetros se leen todos con `rospy.get_param` y se cargan desde `kobuki_<calibracio>.yaml`. En el código solo quedan los valores por defecto.
 - Publicamos una matriz de covarianza diagonal constante: $10^{-3}\ \text{m}^2$ en $x$ e $y$, $10^{-2}\ \text{rad}^2$ en yaw, y $10^{6}$ en las componentes que no se estiman ($z$, roll y pitch, al tratarse de un robot plano). El valor de $10^{-3}\ \text{m}^2$ equivale a una desviación típica de unos $3\text{ cm}$, un margen algo conservador frente a la dispersión de $1$ a $2\text{ cm}$ por eje medida después en el UMBmark con parámetros nominales (ver apartado 7.3). Al ser una estimación fija, no aumenta con la distancia recorrida, aunque en la realidad la incertidumbre de la odometría sí crece conforme avanza el robot.
 
-Pruebas: recta, giro en el sitio y curva con `kobuki_keyop`, comparando `/odom_propi` con `/odom` en `rqt_plot`, el marco `base_footprint_propi` sigue al robot en rviz, con `comptador_inicial:=65000` no hay saltos, y tras `rosservice call /odometria_propia/reset` la pose vuelve a cero sin saltos posteriores.
+Para validar se comparó `/odom_propi` con `/odom` en `rqt_plot` en recta, giro en sitio y curva, se comprobó que `base_footprint_propi` sigue al robot en rviz, que con `comptador_inicial:=65000` no hay saltos, y que tras `rosservice call /odometria_propia/reset` la pose vuelve a cero sin saltos.  La Figura 1 muestra la cadena completa durante la prueba del apartado 3.
 
 ---
 
