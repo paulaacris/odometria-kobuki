@@ -25,10 +25,6 @@ La odometría estima la pose de un robot a partir de lo que giran sus ruedas. Es
 
 En esta práctica hemos montado sobre el Kobuki simulado en Gazebo todo el recorrido, desde el contador del encoder hasta una pose calibrada:
 
-```diff
-- Esta tabla no se si quitarla 
-```
-
 | Apartado | Qué hemos hecho |
 |---|---|
 | 0 | Arrancar el simulador, mover el robot y localizar los topics que se usan después. |
@@ -41,33 +37,7 @@ El robot de Gazebo es perfecto, radios de 0,035 m y distancia entre ruedas de 0,
 
 ---
 
-## 2. Estructura del paquete y cómo ejecutarlo
-
-```diff
-- La estructura a lo mejor se puede quitar
-```
-
-```
-pl1_cognom/
-├── scripts/
-│   ├── encoder_emulat.py        # ángulo de rueda -> cuentas de 16 bits
-│   ├── odometria_propia.py      # cuentas -> pose (x, y, θ)
-│   ├── executor_recorregut.py   # cuadrado / recta / arco
-│   └── registre_csv.py          # [profesorado] guarda los CSV
-├── config/
-│   ├── kobuki_nominal.yaml      # valores reales del modelo
-│   ├── kobuki_fabrica.yaml      # [profesorado] valores con error del grupo
-│   ├── kobuki_calibrat.yaml     # lo genera analisi/umbmark.py
-│   └── executor.yaml            # parámetros del executor
-├── launch/                      # [profesorado] odometria, prova, integracio, umbmark
-├── analisi/
-│   ├── integracio.py            # apartado 3
-│   ├── umbmark.py               # apartado 4 (esqueleto del profesorado, cinco funciones nuestras)
-│   └── orientacio.py            # apartado 4: odometría frente a IMU
-└── resultats/                   # CSV y figuras generados
-```
-
-Comandos que usamos, en el orden de la práctica:
+## 2. Cómo ejecutarlo
 
 ```bash
 # apartado 1 (con kbuki_sim y kobuki_keyop en marcha)
@@ -111,10 +81,6 @@ python3 analisi/orientacio.py
 
 ## 3. Apartado 0: primeros pasos
 
-```diff
-- Modificar este apartado
-```
-
 Este apartado es guiado, pero deja tres datos que se usan en toda la práctica:
 
 | Dato | Valor |
@@ -123,13 +89,11 @@ Este apartado es guiado, pero deja tres datos que se usan en toda la práctica:
 | Frecuencia de `/joint_states` | 100 Hz |
 | Modelo del Kobuki en `/gazebo/model_states` | `mobile_base` |
 
-Con `kobuki_keyop` comprobamos los tres movimientos básicos de un robot diferencial: línea recta (las dos ruedas giran igual), giro en el sitio (una rueda avanza y la otra retrocede) y curva (la rueda exterior gira más deprisa que la interior).
-
-En rviz, con Fixed Frame `odom`, vimos el modelo, los marcos `odom` y `base_footprint` y las flechas de `/odom`. Con `rqt_plot` comparamos la x de `/odom` con la x real de Gazebo: se separan muy poco, pero no son iguales. `/odom` es la odometría que calcula el simulador, no la pose real, y eso es importante porque más adelante la usamos solo como comparación y nunca para controlar.
-
 ---
 
 ## 4. Apartado 1: encoders y odometría
+
+La odometría se calcula en dos nodos, un emulador que convierte el giro de las ruedas en cuentas de encoder y un integrador que reconstruye la pose a partir de esas cuentas.
 
 ### 4.1 Resolución del encoder
 
@@ -147,11 +111,17 @@ Cada cuenta equivale a este avance de la rueda:
 Δs = 2π · r / N = 2π · 0,035 / 2578,33 ≈ 0,0853 mm/cuenta
 ```
 
+y en giro a:
+
+```
+0,085 mm / 0,230 m ≈ 3,7 · 10⁴ rad ≈ 0,02°
+```
+
 Este valor marca la resolución de la odometría,  cualquier desplazamiento de la rueda inferior a 0,085 mm no genera un cambio de cuenta y pasa desapercibido para el sistema.
 
 ### 4.2 Nodo `encoder_emulat.py`
 
-Gazebo publica el ángulo acumulado de cada rueda en radianes, continuo y sin saltos. Un robot real entrega cuentas enteras de 16 bits que vuelven a 0 después del 65 535. El emulador convierte un formato en el otro y publica un `kobuki_msgs/SensorState`, el mismo mensaje que daría el Kobuki real, de modo que el nodo de odometría no sabe si trabaja con simulación o con el robot.
+Gazebo publica el ángulo acumulado de cada rueda en radianes, continuo y sin saltos, mientras que un Kobuki real entrega cuentas enteras de 16 bits que vuelven a 0 después del 65 535. El emulador convierte un formato en el otro y publica un `kobuki_msgs/SensorState`, el mismo mensaje que daría el Kobuki real, de modo que el nodo de odometría no sabe si trabaja con simulación o con el robot.
 
 Para cada mensaje de `/joint_states`:
 
@@ -186,7 +156,7 @@ Decisiones de diseño:
 - Los parámetros se leen todos con `rospy.get_param` y se cargan desde `kobuki_<calibracio>.yaml`. En el código solo quedan los valores por defecto.
 - Publicamos una matriz de covarianza diagonal constante: $10^{-3}\ \text{m}^2$ en $x$ e $y$, $10^{-2}\ \text{rad}^2$ en yaw, y $10^{6}$ en las componentes que no se estiman ($z$, roll y pitch, al tratarse de un robot plano). El valor de $10^{-3}\ \text{m}^2$ equivale a una desviación típica de unos $3\text{ cm}$, un margen algo conservador frente a la dispersión de $1$ a $2\text{ cm}$ por eje medida después en el UMBmark con parámetros nominales (ver apartado 7.3). Al ser una estimación fija, no aumenta con la distancia recorrida, aunque en la realidad la incertidumbre de la odometría sí crece conforme avanza el robot.
 
-Pruebas: recta, giro en el sitio y curva con `kobuki_keyop`, comparando `/odom_propi` con `/odom` en `rqt_plot`, el marco `base_footprint_propi` sigue al robot en rviz, con `comptador_inicial:=65000` no hay saltos, y tras `rosservice call /odometria_propia/reset` la pose vuelve a cero sin saltos posteriores.
+Para validar se comparó `/odom_propi` con `/odom` en `rqt_plot` en recta, giro en sitio y curva, se comprobó que `base_footprint_propi` sigue al robot en rviz, que con `comptador_inicial:=65000` no hay saltos, y que tras `rosservice call /odometria_propia/reset` la pose vuelve a cero sin saltos.  La Figura 1 muestra la cadena completa durante la prueba del apartado 3.
 
 ---
 
@@ -298,15 +268,15 @@ Al doblar la frecuencia de 2 Hz a 4 Hz, la teoría dice que el error de Euler se
 
 | Método | Error a 2 Hz (mm) | Error a 4 Hz (mm) | Cociente |
 |---|---|---|---|
-| Euler | [RELLENAR] | [RELLENAR] | [RELLENAR] (esperado ≈ 2) |
-| Punto medio | [RELLENAR] | [RELLENAR] | [RELLENAR] (esperado ≈ 4) |
-| Exacta | [RELLENAR] | [RELLENAR] | no aplica |
+| Euler | 100,24 | 50,38 | 1,99 (esperado ≈ 2) |
+| Punto medio | 1,63 | 0,37 | 4,37 (esperado ≈ 4) |
+| Exacta | 0,05 | 0,08 | no aplica |
 
 ### 6.4 Interpretación y método por defecto
 
-[RELLENAR: ordenar los tres métodos por error y comparar el orden con el de la diapositiva 21; comentar si los cocientes de la segunda tabla se parecen a 2 y 4 y, si no, por qué.]
+Ordenados de mayor a menor error: Euler, punto medio y exacta, que es el orden esperado. Los cocientes se parecen a lo que predice la teoría, Euler (1,99) se acerca a 2, porque su error es de primer orden y se divide por 2 al doblar la frecuencia. El punto medio (4,37) se acerca a 4, porque su error es de segundo orden. La pequeña desviación del 4,37 es normal con un solo recorrido por frecuencia y con errores tan pequeños, cercanos a la resolución del encoder (0,085 mm). La exacta no tiene cociente, su error es tan pequeño, del orden de la resolución del encoder, que no sigue ninguna tendencia.
 
-Nuestro nodo usa `punt_mig` por defecto. Es muy sencillo de programar, no tiene el problema de dividir por Δθ ≈ 0 que tiene la exacta, y a las frecuencias a las que trabaja el robot (50 a 100 Hz) la diferencia con la exacta es mínima. [RELLENAR: confirmar con la tabla del apartado 6.3.]
+Nuestro nodo usa `punt_mig` por defecto. Es muy sencillo de programar, no tiene el problema de dividir por Δθ ≈ 0 que tiene la exacta, y a las frecuencias a las que trabaja el robot (50 a 100 Hz) la diferencia con la exacta es mínima. A 4 Hz el punto medio ya tiene un error de 0,37 mm, y a 50–100 Hz sería mucho menor, por lo que la diferencia con la exacta es despreciable.
 
 ---
 
