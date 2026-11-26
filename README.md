@@ -258,14 +258,6 @@ y guarda la tabla en `resultats/integracio_taula_<freq>.csv`.
 
 ### 6.3 Resultados
 
-Error final de cada método respecto a la referencia, con freq = 5 Hz:
-
-| Método | Error final (mm) |
-|---|---|
-| Euler | [RELLENAR] |
-| Punto medio | [RELLENAR] |
-| Exacta | [RELLENAR] |
-
 Al doblar la frecuencia de 2 Hz a 4 Hz, la teoría dice que el error de Euler se divide por 2, el del punto medio por 4 y el de la exacta no cambia:
 
 | Método | Error a 2 Hz (mm) | Error a 4 Hz (mm) | Cociente |
