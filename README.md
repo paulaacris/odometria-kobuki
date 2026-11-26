@@ -27,7 +27,7 @@ El robot de Gazebo es perfecto, radios de 0,035 m y distancia entre ruedas de 0,
 ## 2. Cómo ejecutarlo
 
 ```bash
-# apartado 1 (con kbuki_sim y kobuki_keyop en marcha)
+# apartado 1 (con kobuki_sim y kobuki_keyop en marcha)
 # probar encoder_emulat.py
 rosrun pl1_cognom encoder_emulat.py
 rostopic echo /encoders
@@ -38,9 +38,6 @@ roslaunch pl1_cognom odometria.launch rviz:=true
 roslaunch pl1_cognom prova.launch                          
 
 # apartado 3
-# 5 Hz
-roslaunch pl1_cognom integracio.launch
-python3 analisi/integracio.py 5
 # 2 Hz
 roslaunch pl1_cognom integracio.launch freq:=2
 python3 analisi/integracio.py 2
@@ -90,7 +87,7 @@ El fabricante da 52 cuentas por vuelta del eje del motor y una reducción de 654
 N = 52 · 6545 / 132 = 2578,33 cuentas/vuelta
 ```
 
-Coincide con el valor por defecto del enunciado. Para ver si esos 52 cuentas ya incluyen el factor ×4 de la cuadratura, probamos la fórmula `N = 4 · PPR · G` con PPR = 52 y sale 10.313,33, cuatro veces más. Los 52 de la ficha técnica ya incluyen el ×4, así que no hay que volver a multiplicarlos.
+Coincide con el valor por defecto del enunciado. Para ver si esas 52 cuentas ya incluyen el factor ×4 de la cuadratura, probamos la fórmula `N = 4 · PPR · G` con PPR = 52 y sale 10.313,33, cuatro veces más. Los 52 de la ficha técnica ya incluyen el ×4, así que no hay que volver a multiplicarlos.
 
 Cada cuenta equivale a este avance de la rueda:
 
@@ -101,7 +98,7 @@ Cada cuenta equivale a este avance de la rueda:
 y en giro a:
 
 ```
-0,085 mm / 0,230 m ≈ 3,7 · 10⁴ rad ≈ 0,02°
+0,085 mm / 0,230 m ≈ 3,7 · 10⁻⁴ rad ≈ 0,02°
 ```
 
 Este valor marca la resolución de la odometría,  cualquier desplazamiento de la rueda inferior a 0,085 mm no genera un cambio de cuenta y pasa desapercibido para el sistema.
@@ -127,7 +124,7 @@ Cada mensaje de encoders hace un paso completo de odometría, siempre en este or
 cuentas -> Δn (corrige desbordamiento) -> ΔsR, ΔsL -> Δs, Δθ -> integración -> publicar
 ```
 
-1. La prrimera lectura solo guarda las cuentas y el `stamp`. No integra porque todavía no hay lectura anterior.
+1. La primera lectura solo guarda las cuentas y el `stamp`. No integra porque todavía no hay lectura anterior.
 2. Δt sale de la diferencia de `header.stamp`, nunca de `rospy.Time.now()`, para que funcione con el tiempo de simulación. Si Δt ≤ 0 se avisa con `logwarn`, se vuelve al estado de primera lectura y se conserva la pose.
 3. Si la diferencia entre dos lecturas es menor que −32 768 se suma 65 536, y si es mayor que 32 767 se resta 65 536. Así el salto de 65 535 a 0 se interpreta como +1 y no como un retroceso enorme.
 4. Distancia de cada rueda con su propio radio, para poder calibrarlos por separado: `Δs_rueda = r_rueda · 2π · Δn / N`.
@@ -141,9 +138,9 @@ Decisiones de diseño:
 - Un `threading.Lock` protege el estado, porque el callback de los encoders y el servicio `~reset` corren en hilos distintos.
 - El servicio `~reset` pone x, y, θ a cero pero conserva los últimos recuentos leídos. Si no lo hiciera, el paso siguiente vería un salto enorme en las cuentas y la pose saltaría.
 - Los parámetros se leen todos con `rospy.get_param` y se cargan desde `kobuki_<calibracio>.yaml`. En el código solo quedan los valores por defecto.
-- Publicamos una matriz de covarianza diagonal constante: $10^{-3}\ \text{m}^2$ en $x$ e $y$, $10^{-2}\ \text{rad}^2$ en yaw, y $10^{6}$ en las componentes que no se estiman ($z$, roll y pitch, al tratarse de un robot plano). El valor de $10^{-3}\ \text{m}^2$ equivale a una desviación típica de unos $3\text{ cm}$, un margen algo conservador frente a la dispersión de $1$ a $2\text{ cm}$ por eje medida después en el UMBmark con parámetros nominales (ver apartado 7.3). Al ser una estimación fija, no aumenta con la distancia recorrida, aunque en la realidad la incertidumbre de la odometría sí crece conforme avanza el robot.
+- Publicamos una matriz de covarianza diagonal constante: $10^{-3}\ \text{m}^2$ en $x$ e $y$, $10^{-2}\ \text{rad}^2$ en yaw, y $10^{6}$ en las componentes que no se estiman ($z$, roll y pitch, al tratarse de un robot plano). El valor de $10^{-3}\ \text{m}^2$ equivale a una desviación típica de unos $3\text{ cm}$, un margen algo conservador frente a la dispersión de $1$ a $2\text{ cm}$ por eje medida después en el UMBmark con parámetros nominales. Al ser una estimación fija, no aumenta con la distancia recorrida, aunque en la realidad la incertidumbre de la odometría sí crece conforme avanza el robot.
 
-Para validar se comparó `/odom_propi` con `/odom` en `rqt_plot` en recta, giro en sitio y curva, se comprobó que `base_footprint_propi` sigue al robot en rviz, que con `comptador_inicial:=65000` no hay saltos, y que tras `rosservice call /odometria_propia/reset` la pose vuelve a cero sin saltos.  La Figura 1 muestra la cadena completa durante la prueba del apartado 3.
+Para validar se comparó `/odom_propi` con `/odom` en `rqt_plot` en recta, giro en sitio y curva, se comprobó que `base_footprint_propi` sigue al robot en rviz, que con `comptador_inicial:=65000` no hay saltos, y que tras `rosservice call /odometria_propia/reset` la pose vuelve a cero sin saltos.  La Figura 1 muestra la cadena completa durante la prueba del apartado 2.
 
 ![Figura 1](img/figura1.png)
 
@@ -157,7 +154,7 @@ Usar Time.now() daría Δt erróneos al pausar o reiniciar Gazebo. Se usa el sta
 
 ## 5. Apartado 2: executor de recorridos
 
-El UMBmark necesita repetir muchas veces el mismo cuadrado, en los dos sentidos, guiado solo por la odometría del propio robot. El nodo `executor_recorregut.py` lo hace con un control proporcional y publica las velocidades en `/mobile_base/comands/velocity`.
+El UMBmark necesita repetir muchas veces el mismo cuadrado, en los dos sentidos, guiado solo por la odometría del propio robot. El nodo `executor_recorregut.py` lo hace con un control proporcional y publica las velocidades en `/mobile_base/commands/velocity`.
 
 ### 5.1 Segmentos
 
@@ -223,7 +220,7 @@ Los tres reciben la pose anterior (x, y, θ) y los incrementos Δs y Δθ, y dev
 |---|---|---|
 | Euler | Avanza Δs con la orientación del inicio del paso y luego gira | `x += Δs·cos θ`, `y += Δs·sin θ` |
 | Punto medio | Avanza Δs con la orientación media del paso | `φ = θ + Δθ/2`; `x += Δs·cos φ`, `y += Δs·sin φ` |
-| Exacta | Avanza la cuerda del arco con la orientación media | `c = 2·(Δs/Δθ)·sin(Δθ/2)  |
+| Exacta | Avanza la cuerda del arco con la orientación media | `c = 2·(Δs/Δθ)·sin(Δθ/2)`  |
 
 En el método exacto, si `|Δθ| < llindar_dtheta` ($10^{-6}\text{ rad}$) consideramos que el robot va prácticamente recto y tomamos la cuerda como c = Δs, lo que equivale a aplicar el método del punto medio. Así se evita dividir por un Δθ casi nulo.
 
@@ -245,7 +242,7 @@ y guarda la tabla en `resultats/integracio_taula_<freq>.csv`.
 
 ### 6.3 Resultados
 
-Al doblar la frecuencia de 2 Hz a 4 Hz, la teoría dice que el error de Euler se divide por 2, el del punto medio por 4 y el de la exacta no cambia:
+Al doblar la frecuencia de 2 Hz a 4 Hz, la teoría dice que el error de Euler se divide por 2, el del punto medio por 4 y el de la exacta es teóricamente nulo (integra el arco sin aproximación):
 
 | Método | Error a 2 Hz (mm) | Error a 4 Hz (mm) | Cociente |
 |---|---|---|---|
@@ -259,7 +256,7 @@ Nuestro nodo usa `punt_mig` por defecto. Es sencillo de programar, no tiene el p
 
 ### 6.4 Dificultades y soluciones
 
-Comparar con la pose de Gazebo mezclaría el error de integración con la cuantización de los encoders y el deslizamiento. Se usa una referencia propia, con las mismas cuentas a alta frecuencia, para que la diferencia sea solo de integración.
+Comparar con la pose de Gazebo mezclaría el error de integración con el deslizamiento real de las ruedas (del orden de centímetros durante el arco), que afecta a las cuatro odometrías por igual y dominaría el resultado, Euler saldría aparentemente el mejor.
 
 ## 7. Apartado 4: UMBmark y calibración
 
@@ -292,7 +289,7 @@ Comparando `kobuki_fabrica.yaml` con `kobuki_nominal.yaml`:
 | `radi_esquerra` | 0,0350437 m | 0,035 m |
 | `distancia_rodes` | 0,2284693 m | 0,230 m |
 
-Con estos parámetros se puede calcular a mano lo que debería medir el UMBmark::
+Con estos parámetros se puede calcular a mano lo que debería medir el UMBmark:
 
 ```
 Ed esperado = (razón real de ruedas) / (razón que se cree) = 1 / (0,0349563 / 0,0350437) ≈ 1,0025
@@ -373,7 +370,7 @@ Tras la calibración los dos radios quedan casi iguales (razón 0,99985) y la di
 Con los parámetros de fábrica falla la odometría, no la IMU. En la gráfica de fábrica el error de la odometría sube en rampa durante cada tramo recto y baja de golpe al hacer cada giro, y estos dos efectos tienen causas distintas:
 
 - La rampa viene de Ed. La odometría cree que una rueda es algo más grande que la otra y se corrige para ir recta, de modo que el robot real se va curvando. Con Ed = 1,0025 en un tramo de 3 m produce una desviación angular de `0,0025 · 3 / 0,23 ≈ 0,033 rad ≈ 1,9°`, y en la figura cada rampa sube alrededor de 2°.
-- El escalón en cada giro viene de Eb. Con una b creída demasiado pequeña, la odometría piensa que ha girado más de lo que giró en realidad, y el robot real se queda corto. Cada escalón es de en torno a 1°, del orden de lo que se espera con un Eb de 1,0067 (0,6° por cada giro de 90°).
+- El escalón en cada giro viene de Eb. Con una b creída demasiado pequeña, la odometría piensa que ha girado más de lo que giró en realidad, y el robot real se queda corto. Cada escalón es de entre 0,9° y 1,5°, algo más de los 0,6° esperados con un Eb de 1,0067 (0,6° por cada giro de 90°), porque se suman `tol_angle` y el muestreo a 10 Hz.
 
 Los dos efectos van en sentidos contrarios, por eso el error no se dispara y termina en 3,6°. Esto también explica que en los recorridos `cw` el error de orientación sea mucho mayor (entre 10° y 11° al final, según `finals.csv`) que en `ccw` (entre 3,6° y 5°), en un sentido Ed y Eb se compensan en parte y en el otro se suman.
 
