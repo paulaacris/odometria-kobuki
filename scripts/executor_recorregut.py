@@ -15,10 +15,11 @@ FREQ_CONTROL = 50.0   # Hz a los que se ejecuta el bucle de control
 PAUSA_ENTRE_SEGMENTS = 0.5  # entre segments el robot s'atura i espera mig segon
 TIMEOUT_ODOM = 2.0    # s máximos esperando una odometría nueva tras un reset
 
-"""hacer que el robot móvil (el Kobuki) 
-recorra figuras geométricas (como un cuadrado, una línea recta o un arco) 
-utilizando exclusivamente su propia odometría (/odom_propi)"""
 class ExecutorRecorregut:
+    """hacer que el robot móvil (el Kobuki) 
+    recorra figuras geométricas (como un cuadrado, una línea recta o un arco) 
+    utilizando exclusivamente su propia odometría (/odom_propi)"""
+
     def __init__(self):
         # parametros 
         self.tipus = rospy.get_param("~tipus", "quadrat")          # quadrat | recta | arc

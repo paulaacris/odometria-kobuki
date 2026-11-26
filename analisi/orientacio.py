@@ -23,7 +23,7 @@ def llegir_serie(ruta):
 
 def error_orientacio(serie, font):
     d = serie[serie["font"] == font] # nso quedamos solo con las filas que pertenecen a la fuente
-    e = d["theta_real"].to_numpy() - d["theta"].to_numpy() # error = orientacion estimada - orientación real Gazebo
+    e = d["theta_real"].to_numpy() - d["theta"].to_numpy() # error = theta_real - theta estimada
     e = np.arctan2(np.sin(e), np.cos(e)) # error angular normalizado 
     return d["t"].to_numpy(), e 
 

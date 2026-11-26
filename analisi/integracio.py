@@ -33,7 +33,7 @@ def llegir_finals(ruta):
     """Comprueba que existe finals.csv y lo carga como DataFrame de pandas.
     El fichero tiene una fila por fuente y por recorrido (columna 'run')."""
     if not os.path.isfile(ruta):
-        raise SystemExit("Falta %s\n  Executa abans: roslaunch pl1_oliver integracio.launch "
+        raise SystemExit("Falta %s\n  Executa abans: roslaunch pl1_COGNOM integracio.launch "
                          "freq:=<freq>" % ruta)
     return pd.read_csv(ruta)
 
