@@ -4,19 +4,6 @@ Ampliación de Robótica (22439) · UIB
 
 Paula Cristina Morro Negre, Toni Oliver Font
 
-## Índice
-
-1. [Introducción](#1-introducción)
-2. [Estructura del paquete y cómo ejecutarlo](#2-estructura-del-paquete-y-cómo-ejecutarlo)
-3. [Apartado 0: primeros pasos](#3-apartado-0-primeros-pasos)
-4. [Apartado 1: encoders y odometría](#4-apartado-1-encoders-y-odometría)
-5. [Apartado 2: executor de recorridos](#5-apartado-2-executor-de-recorridos)
-6. [Apartado 3: métodos de integración](#6-apartado-3-métodos-de-integración)
-7. [Apartado 4: UMBmark y calibración](#7-apartado-4-umbmark-y-calibración)
-8. [Conclusiones](#8-conclusiones)
-9. [Capturas](#9-capturas)
-10. [Referencias](#10-referencias)
-
 ---
 
 ## 1. Introducción
